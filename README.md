@@ -56,22 +56,23 @@ AsyncTicket의 기능별 계층과 wiring 구성을 따릅니다. `UserService`�
 
 ## 로컬 실행
 
-1. PostgreSQL과 uv를 설치합니다. PostgreSQL 관리자 계정으로 아래 SQL을 실행합니다. 비밀번호는 사용할 값으로 바꿉니다.
+AsyncTicket과 같은 방식으로 `DATABASE_URL`에서 PostgreSQL 연결 정보를 읽습니다. 기본값은 아래와 같습니다.
 
-   ```sql
-   CREATE USER board WITH PASSWORD 'your-password';
-   CREATE DATABASE board OWNER board;
-   ```
+```dotenv
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/postgres
+```
 
-2. `.env.example`을 `.env`로 복사합니다. 기존 `.env`가 있다면 연결 정보를 수정합니다. `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`를 실제 PostgreSQL 설정에 맞추고, `JWT_SECRET`에는 최소 32자의 임의 문자열을 입력합니다.
+PostgreSQL이 실행 중이고 기존 `postgres` 계정의 비밀번호가 `postgres`라면 기본값으로 연결됩니다. 다른 비밀번호나 DB를 사용하면 URL을 수정합니다. `postgresql+asyncpg://` 형식의 기존 URL도 현재 동기 드라이버인 psycopg 형식으로 변환해 연결합니다.
 
-   ```powershell
-   uv sync --locked
-   uv run python -c "import secrets; print(secrets.token_hex(32))"
-   uv run uvicorn app.main:app --reload
-   ```
+`.env.example`을 `.env`로 복사하고 `JWT_SECRET`에 최소 32자의 임의 문자열을 입력합니다. 기존 `.env`가 있으면 그대로 사용합니다.
 
-3. [Swagger UI](http://localhost:8000/docs)를 엽니다. 서버 시작 시 필요한 테이블이 자동 생성됩니다. [상태 확인](http://localhost:8000/health)에서 DB 연결을 확인할 수 있습니다.
+```powershell
+uv sync --locked
+uv run python -c "import secrets; print(secrets.token_hex(32))"
+uv run uvicorn app.main:app --reload
+```
+
+[Swagger UI](http://localhost:8000/docs)를 엽니다. 연결한 DB에 필요한 테이블이 자동 생성됩니다. [상태 확인](http://localhost:8000/health)에서 DB 연결을 확인할 수 있습니다.
 
 ## API
 
@@ -92,7 +93,7 @@ Swagger UI에서 **POST /auth/signup**을 실행한 뒤 상단 **Authorize**에 
 
 ## PostgreSQL 연동 테스트
 
-별도 PostgreSQL 테스트 DB를 만든 뒤 연결 환경 변수를 설정합니다. 예를 들어 `POSTGRES_DB=board_test`를 설정하고 아래 명령을 실행합니다.
+별도 PostgreSQL 테스트 DB를 만든 뒤 연결 환경 변수를 설정합니다. 예를 들어 `DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5432/board_test`를 설정하고 아래 명령을 실행합니다.
 
 ```bash
 uv run python -m unittest discover -s tests -v

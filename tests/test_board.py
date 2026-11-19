@@ -10,8 +10,10 @@ from fastapi.testclient import TestClient
 class BoardIntegrationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if not os.environ.get("POSTGRES_DB", "").endswith("_test"):
-            raise unittest.SkipTest("POSTGRES_DB must point to a dedicated *_test database.")
+        from sqlalchemy.engine import make_url
+        database = make_url(os.environ.get("DATABASE_URL", "postgresql://localhost/postgres")).database or ""
+        if not database.endswith("_test"):
+            raise unittest.SkipTest("DATABASE_URL must point to a dedicated *_test database.")
 
     def test_auth_and_post_crud(self):
         from app.shared.core.config import settings
