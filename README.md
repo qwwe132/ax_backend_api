@@ -2,21 +2,37 @@
 
 FastAPI, PostgreSQL, SQLAlchemy로 만든 게시판 API입니다. Swagger UI에서 회원가입·로그인과 게시글 CRUD를 실행할 수 있습니다. 게시글은 공개 조회가 가능하며, 로그인한 회원만 작성할 수 있습니다. 작성자와 관리자는 게시글을 수정·삭제할 수 있습니다.
 
+## 프로젝트 구조
+
+Router → Service → Repository → Model의 4계층으로 구성했습니다.
+
+| 계층 | 경로 | 역할 |
+|---|---|---|
+| Router | `app/routers/` | HTTP 요청, 응답, 매개변수와 인증 의존성 |
+| Service | `app/services/` | 회원가입, 로그인, 작성자 권한과 트랜잭션 처리 |
+| Repository | `app/repositories/` | SQLAlchemy 조회, 추가, 삭제 |
+| Model | `app/models/` | 사용자·게시글 테이블과 관계 |
+
+`schemas.py`는 요청·응답 데이터 검증, `security.py`는 JWT 검증, `db.py`는 DB 연결을 담당합니다.
+
 ## 로컬 실행
 
-Docker와 Compose를 준비한 뒤 `.env.example`을 `.env`로 복사합니다. `POSTGRES_PASSWORD`에는 DB 비밀번호, `JWT_SECRET`에는 최소 32자의 임의 문자열을 입력합니다. JWT 서명 키는 아래 명령으로 생성할 수 있습니다.
+1. PostgreSQL과 uv를 설치합니다. PostgreSQL 관리자 계정으로 아래 SQL을 실행합니다. 비밀번호는 사용할 값으로 바꿉니다.
 
-```bash
-uv run python -c "import secrets; print(secrets.token_hex(32))"
-docker compose up -d --build
-docker compose logs -f api
-```
+   ```sql
+   CREATE USER board WITH PASSWORD 'your-password';
+   CREATE DATABASE board OWNER board;
+   ```
 
-- Swagger UI — [http://localhost:8000/docs](http://localhost:8000/docs)
-- OpenAPI JSON — [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
-- DB 연결 상태 — [http://localhost:8000/health](http://localhost:8000/health)
+2. `.env.example`을 `.env`로 복사합니다. 기존 `.env`가 있다면 연결 정보를 수정합니다. `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`를 실제 PostgreSQL 설정에 맞추고, `JWT_SECRET`에는 최소 32자의 임의 문자열을 입력합니다.
 
-PostgreSQL을 이미 실행 중이라면 `.env`에 연결 정보를 넣고 `uv sync --locked`, `uv run uvicorn app.main:app --reload`로 실행할 수도 있습니다. 애플리케이션이 처음 시작될 때 필요한 테이블을 생성합니다.
+   ```powershell
+   uv sync --locked
+   uv run python -c "import secrets; print(secrets.token_hex(32))"
+   uv run uvicorn app.main:app --reload
+   ```
+
+3. [Swagger UI](http://localhost:8000/docs)를 엽니다. 서버 시작 시 필요한 테이블이 자동 생성됩니다. [상태 확인](http://localhost:8000/health)에서 DB 연결을 확인할 수 있습니다.
 
 ## API
 
@@ -47,15 +63,10 @@ uv run python -m unittest discover -s tests -v
 
 ## AWS EC2 배포
 
-1. Docker와 Compose가 설치된 EC2 인스턴스에서 제출용 GitHub 저장소를 클론합니다.
-2. 인스턴스에서 `.env`를 만들고 배포용 DB 비밀번호와 JWT 키를 입력합니다. `docker compose up -d --build`를 실행한 뒤 `curl -f http://127.0.0.1:8000/health`로 확인합니다.
-3. 도메인의 DNS를 EC2 퍼블릭 IP로 연결한 뒤 Caddy 등 HTTPS 리버스 프록시를 설정합니다. API는 호스트의 `127.0.0.1:8000`에 바인딩됩니다. Caddy 설정 예시는 아래와 같습니다.
+1. EC2에 Python, uv와 PostgreSQL을 준비하고 이 저장소를 클론합니다.
+2. 로컬 실행과 같은 방식으로 DB 계정과 데이터베이스, `.env`를 준비합니다.
+3. `uv sync --locked --no-dev`로 설치한 뒤 `uv run uvicorn app.main:app --host 0.0.0.0 --port 8000`으로 접속을 확인합니다.
+4. EC2 보안 그룹의 TCP 8000을 열었다면 `http://퍼블릭IP:8000/docs`에서 Swagger에 접근할 수 있습니다. SSH는 접속할 IP에 허용합니다.
+5. 계속 실행할 때는 systemd에 Uvicorn 실행 명령과 프로젝트 작업 디렉터리를 등록합니다. 도메인과 HTTPS를 사용하는 경우 리버스 프록시를 통해 `127.0.0.1:8000`으로 연결합니다.
 
-   ```caddyfile
-   api.example.com {
-       reverse_proxy 127.0.0.1:8000
-   }
-   ```
-
-4. EC2 보안 그룹에서 서비스용 TCP 80·443을 허용합니다. SSH를 쓴다면 TCP 22는 접속하는 IP에만 허용합니다. PostgreSQL 포트는 Compose 내부 네트워크에서 사용합니다.
-5. 외부 브라우저에서 `https://배포주소/docs`를 열고 회원가입, 로그인, 게시글 CRUD를 확인합니다. 과제에는 GitHub 저장소 URL과 이 Swagger UI URL을 함께 제출합니다.
+과제에는 GitHub URL과 실제 접속 가능한 API·Swagger UI 주소를 제출합니다.

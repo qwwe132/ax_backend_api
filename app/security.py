@@ -9,6 +9,7 @@ from pwdlib import PasswordHash
 from .config import settings
 from .db import Db
 from .models import User
+from .repositories import users
 
 password_hasher = PasswordHash.recommended()
 dummy_hash = password_hasher.hash("unused-password-for-unknown-account")
@@ -47,7 +48,7 @@ def get_current_user(token: Annotated[str, Depends(bearer)], db: Db) -> User:
     except (jwt.InvalidTokenError, ValueError):
         raise unauthorized("토큰이 유효하지 않거나 만료되었습니다.") from None
 
-    user = db.get(User, user_id)
+    user = users.get_by_id(db, user_id)
     if user is None:
         raise unauthorized("사용자를 확인할 수 없습니다.")
     return user

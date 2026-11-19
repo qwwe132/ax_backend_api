@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from . import auth, posts
+from .routers import auth, posts
 from .config import settings
 from .db import Base, Db, engine
 
