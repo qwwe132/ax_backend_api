@@ -9,8 +9,8 @@ from sqlalchemy import text
 
 from app.users.presentation import router as auth
 from app.posts.presentation import router as posts
-from app.shared.config import settings
-from app.shared.db import Base, Db, engine
+from app.shared.core.config import settings
+from app.shared.core.database import Base, Db, engine
 
 
 @asynccontextmanager
@@ -23,6 +23,10 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="게시판 API", version="0.1.0", lifespan=lifespan)
+from app.shared.core.exceptions import AppException
+from app.wiring import wire_dependencies
+
+wire_dependencies(app)
 app.include_router(auth.router)
 app.include_router(posts.router)
 
@@ -48,3 +52,13 @@ async def validation_error(_request: Request, error: RequestValidationError) -> 
 def health(db: Db) -> dict[str, str]:
     db.execute(text("SELECT 1"))
     return {"status": "ok"}
+
+
+@app.exception_handler(AppException)
+async def application_error(_request: Request, error: AppException) -> JSONResponse:
+    headers = {"WWW-Authenticate": "Bearer"} if error.status_code == 401 else None
+    return JSONResponse(
+        status_code=error.status_code,
+        content={"detail": error.message},
+        headers=headers,
+    )

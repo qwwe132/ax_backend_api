@@ -32,10 +32,14 @@ app/
 │     ├─ router.py
 │     ├─ dependencies.py
 │     └─ schemas.py
+├─ wiring/
+│  ├─ users.py
+│  └─ posts.py
 ├─ shared/
-│  ├─ config.py
-│  ├─ db.py
-│  └─ security.py
+│  ├─ core/             # config, database, security, exceptions
+│  ├─ domain/           # 트랜잭션 계약
+│  ├─ infrastructure/   # SQLAlchemy 트랜잭션 구현
+│  └─ presentation/     # 현재 사용자 인증 연결
 └─ main.py
 ```
 
@@ -44,7 +48,11 @@ app/
 - infrastructure는 SQLAlchemy 모델과 저장소 구현을 담당합니다.
 - presentation은 라우터, 요청·응답 스키마와 의존성을 연결합니다.
 
-공통 환경 설정·DB 연결·인증 코드는 `app/shared/`에 있습니다. 애플리케이션 진입점은 `app/main.py`입니다.
+AsyncTicket의 기능별 계층과 wiring 구성을 따릅니다. `UserService`와 `PostService`는 생성자로 저장소와 트랜잭션을 받습니다. `presentation/dependencies.py`는 서비스 제공 계약을 선언하고, `wiring/`이 SQLAlchemy 구현과 서비스를 조립하여 FastAPI 의존성에 연결합니다.
+
+서비스는 요청 스키마 대신 개별 입력값을 받고, 저장소는 도메인 객체를 반환합니다. 저장소의 쓰기는 flush만 수행하고, 서비스가 commit 또는 rollback을 결정합니다. 게시글 수정 권한은 도메인 객체에서 검사하며, 업무 오류는 공통 예외 처리기가 HTTP 응답으로 변환합니다.
+
+현재 과제는 동기 SQLAlchemy 세션을 사용합니다. 공통 코드는 `app/shared/`, 실행 진입점은 `app/main.py`입니다.
 
 ## 로컬 실행
 

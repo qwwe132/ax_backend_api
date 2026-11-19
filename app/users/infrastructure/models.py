@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.shared.db import Base
+from app.shared.core.database import Base
 
 
 from typing import TYPE_CHECKING

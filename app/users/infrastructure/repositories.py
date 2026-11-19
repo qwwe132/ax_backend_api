@@ -25,9 +25,8 @@ class SqlAlchemyUserRepository:
         row = UserModel(username=username, password_hash=password_hash)
         self.db.add(row)
         try:
-            self.db.commit()
+            self.db.flush()
         except IntegrityError as error:
-            self.db.rollback()
             if getattr(error.orig, "sqlstate", None) == "23505":
                 raise UsernameTakenError from None
             raise

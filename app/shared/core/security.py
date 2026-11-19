@@ -1,20 +1,15 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
 
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 
 from .config import settings
-from app.users.presentation.dependencies import Repository
+from .exceptions import AppException
 from app.users.domain.user import User
 
 password_hasher = PasswordHash.recommended()
 dummy_hash = password_hasher.hash("unused-password-for-unknown-account")
-bearer = OAuth2PasswordBearer(tokenUrl="auth/login")
 issuer = "board-api"
-
 
 def create_token(user: User) -> str:
     now = datetime.now(timezone.utc)
@@ -26,15 +21,8 @@ def create_token(user: User) -> str:
     )
 
 
-def unauthorized(message: str) -> HTTPException:
-    return HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=message,
-        headers={"WWW-Authenticate": "Bearer"},
-    )
 
-
-def get_current_user(token: Annotated[str, Depends(bearer)], repository: Repository) -> User:
+def decode_token(token: str) -> int:
     try:
         claims = jwt.decode(
             token,
@@ -45,12 +33,6 @@ def get_current_user(token: Annotated[str, Depends(bearer)], repository: Reposit
         )
         user_id = int(claims["sub"])
     except (jwt.InvalidTokenError, ValueError):
-        raise unauthorized("토큰이 유효하지 않거나 만료되었습니다.") from None
+        raise AppException(401, "토큰이 유효하지 않거나 만료되었습니다.") from None
 
-    user = repository.get_by_id(user_id)
-    if user is None:
-        raise unauthorized("사용자를 확인할 수 없습니다.")
-    return user
-
-
-CurrentUser = Annotated[User, Depends(get_current_user)]
+    return user_id

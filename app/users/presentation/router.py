@@ -2,24 +2,25 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
-from app.users.application import service as auth
 
-from app.users.presentation.dependencies import Repository
+from app.shared.presentation.auth import CurrentUser
+from app.users.application.service import UserService
 from app.users.domain.user import User
-from app.users.presentation.schemas import Signup, Token, UserRead
-from app.shared.security import CurrentUser
+from .dependencies import provider_user_service
+from .schemas import Signup, Token, UserRead
 
 router = APIRouter(prefix="/auth", tags=["인증"])
+Service = Annotated[UserService, Depends(provider_user_service)]
 
 
 @router.post("/signup", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def signup(body: Signup, repository: Repository) -> User:
-    return auth.signup(body, repository)
+def signup(body: Signup, service: Service) -> User:
+    return service.signup(body.username, body.password)
 
 
 @router.post("/login", response_model=Token)
-def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], repository: Repository) -> Token:
-    return auth.login(form.username, form.password, repository)
+def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], service: Service) -> Token:
+    return Token(access_token=service.login(form.username, form.password))
 
 
 @router.get("/me", response_model=UserRead)

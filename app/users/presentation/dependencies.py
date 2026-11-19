@@ -1,10 +1,5 @@
-from typing import Annotated
-from fastapi import Depends
-from app.shared.db import Db
-from app.users.domain.repository import UserRepository
-from app.users.infrastructure.repositories import SqlAlchemyUserRepository
+from app.users.application.service import UserService
 
-def get_repository(db: Db) -> UserRepository:
-    return SqlAlchemyUserRepository(db)
 
-Repository = Annotated[UserRepository, Depends(get_repository)]
+def provider_user_service() -> UserService:
+    raise NotImplementedError("UserService 의존성이 주입되지 않았습니다.")

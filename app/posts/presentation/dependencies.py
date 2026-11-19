@@ -1,10 +1,5 @@
-from typing import Annotated
-from fastapi import Depends
-from app.shared.db import Db
-from app.posts.domain.repository import PostRepository
-from app.posts.infrastructure.repositories import SqlAlchemyPostRepository
+from app.posts.application.service import PostService
 
-def get_repository(db: Db) -> PostRepository:
-    return SqlAlchemyPostRepository(db)
 
-Repository = Annotated[PostRepository, Depends(get_repository)]
+def provider_post_service() -> PostService:
+    raise NotImplementedError("PostService 의존성이 주입되지 않았습니다.")

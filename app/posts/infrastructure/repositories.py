@@ -22,7 +22,7 @@ class SqlAlchemyPostRepository:
     def add(self, title: str, content: str, author_id: int) -> Post:
         row = PostModel(title=title, content=content, author_id=author_id)
         self.db.add(row)
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(row)
         return self.to_domain(row)
 
@@ -30,11 +30,11 @@ class SqlAlchemyPostRepository:
         row = self.db.get(PostModel, post.id)
         row.title = post.title
         row.content = post.content
-        self.db.commit()
+        self.db.flush()
         self.db.refresh(row)
         return self.to_domain(row)
 
     def delete(self, post: Post) -> None:
         row = self.db.get(PostModel, post.id)
         self.db.delete(row)
-        self.db.commit()
+        self.db.flush()
