@@ -14,11 +14,11 @@ class BoardIntegrationTest(unittest.TestCase):
             raise unittest.SkipTest("POSTGRES_DB must point to a dedicated *_test database.")
 
     def test_auth_and_post_crud(self):
-        from app.config import settings
-        from app.db import SessionLocal
+        from app.shared.config import settings
+        from app.shared.db import SessionLocal
         from app.main import app
         from app.users.infrastructure.models import User
-        from app.security import issuer
+        from app.shared.security import issuer
 
         with TestClient(app) as client:
             self.assertEqual(client.get("/health").json(), {"status": "ok"})

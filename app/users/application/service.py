@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from app.users.domain.user import User
 from app.users.domain.repository import UserRepository, UsernameTakenError
 from app.users.presentation.schemas import Signup, Token
-from app.security import create_token, dummy_hash, password_hasher, unauthorized
+from app.shared.security import create_token, dummy_hash, password_hasher, unauthorized
 
 def signup(body: Signup, repository: UserRepository) -> User:
     try:

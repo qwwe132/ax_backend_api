@@ -6,7 +6,7 @@ from app.posts.application import service as posts
 from app.posts.presentation.dependencies import Repository
 from app.posts.domain.post import Post
 from app.posts.presentation.schemas import PostRead, PostWrite
-from app.security import CurrentUser
+from app.shared.security import CurrentUser
 
 router = APIRouter(prefix="/posts", tags=["게시글"])
 

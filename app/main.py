@@ -9,8 +9,8 @@ from sqlalchemy import text
 
 from app.users.presentation import router as auth
 from app.posts.presentation import router as posts
-from .config import settings
-from .db import Base, Db, engine
+from app.shared.config import settings
+from app.shared.db import Base, Db, engine
 
 
 @asynccontextmanager

@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import Depends
-from app.db import Db
+from app.shared.db import Db
 from app.posts.domain.repository import PostRepository
 from app.posts.infrastructure.repositories import SqlAlchemyPostRepository
 

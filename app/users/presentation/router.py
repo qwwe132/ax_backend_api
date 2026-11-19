@@ -7,7 +7,7 @@ from app.users.application import service as auth
 from app.users.presentation.dependencies import Repository
 from app.users.domain.user import User
 from app.users.presentation.schemas import Signup, Token, UserRead
-from app.security import CurrentUser
+from app.shared.security import CurrentUser
 
 router = APIRouter(prefix="/auth", tags=["인증"])
 

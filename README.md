@@ -32,9 +32,10 @@ app/
 │     ├─ router.py
 │     ├─ dependencies.py
 │     └─ schemas.py
-├─ config.py
-├─ db.py
-├─ security.py
+├─ shared/
+│  ├─ config.py
+│  ├─ db.py
+│  └─ security.py
 └─ main.py
 ```
 
@@ -42,6 +43,8 @@ app/
 - domain은 회원·게시글 데이터와 저장소 인터페이스를 정의합니다.
 - infrastructure는 SQLAlchemy 모델과 저장소 구현을 담당합니다.
 - presentation은 라우터, 요청·응답 스키마와 의존성을 연결합니다.
+
+공통 환경 설정·DB 연결·인증 코드는 `app/shared/`에 있습니다. 애플리케이션 진입점은 `app/main.py`입니다.
 
 ## 로컬 실행
 
