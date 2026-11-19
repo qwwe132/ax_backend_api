@@ -24,19 +24,3 @@ class UserRead(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: Literal["bearer"] = "bearer"
-
-
-class PostWrite(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
-    content: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=10000)]
-
-
-class PostRead(PostWrite):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    author_id: int
-    created_at: datetime
-    updated_at: datetime

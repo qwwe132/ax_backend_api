@@ -4,16 +4,44 @@ FastAPI, PostgreSQL, SQLAlchemy로 만든 게시판 API입니다. Swagger UI에�
 
 ## 프로젝트 구조
 
-Router → Service → Repository → Model의 4계층으로 구성했습니다.
+회원과 게시글을 기능별로 묶고 각 기능 내부를 4계층으로 구성했습니다.
 
-| 계층 | 경로 | 역할 |
-|---|---|---|
-| Router | `app/routers/` | HTTP 요청, 응답, 매개변수와 인증 의존성 |
-| Service | `app/services/` | 회원가입, 로그인, 작성자 권한과 트랜잭션 처리 |
-| Repository | `app/repositories/` | SQLAlchemy 조회, 추가, 삭제 |
-| Model | `app/models/` | 사용자·게시글 테이블과 관계 |
+```text
+app/
+├─ users/
+│  ├─ application/service.py
+│  ├─ domain/
+│  │  ├─ user.py
+│  │  └─ repository.py
+│  ├─ infrastructure/
+│  │  ├─ models.py
+│  │  └─ repositories.py
+│  └─ presentation/
+│     ├─ router.py
+│     ├─ dependencies.py
+│     └─ schemas.py
+├─ posts/
+│  ├─ application/service.py
+│  ├─ domain/
+│  │  ├─ post.py
+│  │  └─ repository.py
+│  ├─ infrastructure/
+│  │  ├─ models.py
+│  │  └─ repositories.py
+│  └─ presentation/
+│     ├─ router.py
+│     ├─ dependencies.py
+│     └─ schemas.py
+├─ config.py
+├─ db.py
+├─ security.py
+└─ main.py
+```
 
-`schemas.py`는 요청·응답 데이터 검증, `security.py`는 JWT 검증, `db.py`는 DB 연결을 담당합니다.
+- application은 회원가입·로그인과 게시글 처리 흐름을 담당합니다.
+- domain은 회원·게시글 데이터와 저장소 인터페이스를 정의합니다.
+- infrastructure는 SQLAlchemy 모델과 저장소 구현을 담당합니다.
+- presentation은 라우터, 요청·응답 스키마와 의존성을 연결합니다.
 
 ## 로컬 실행
 

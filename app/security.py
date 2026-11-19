@@ -7,9 +7,8 @@ from fastapi.security import OAuth2PasswordBearer
 from pwdlib import PasswordHash
 
 from .config import settings
-from .db import Db
-from .models import User
-from .repositories import users
+from app.users.presentation.dependencies import Repository
+from app.users.domain.user import User
 
 password_hasher = PasswordHash.recommended()
 dummy_hash = password_hasher.hash("unused-password-for-unknown-account")
@@ -35,7 +34,7 @@ def unauthorized(message: str) -> HTTPException:
     )
 
 
-def get_current_user(token: Annotated[str, Depends(bearer)], db: Db) -> User:
+def get_current_user(token: Annotated[str, Depends(bearer)], repository: Repository) -> User:
     try:
         claims = jwt.decode(
             token,
@@ -48,7 +47,7 @@ def get_current_user(token: Annotated[str, Depends(bearer)], db: Db) -> User:
     except (jwt.InvalidTokenError, ValueError):
         raise unauthorized("토큰이 유효하지 않거나 만료되었습니다.") from None
 
-    user = users.get_by_id(db, user_id)
+    user = repository.get_by_id(user_id)
     if user is None:
         raise unauthorized("사용자를 확인할 수 없습니다.")
     return user
